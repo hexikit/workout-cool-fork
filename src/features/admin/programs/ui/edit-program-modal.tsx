@@ -40,7 +40,7 @@ interface EditProgramModalProps {
 export function EditProgramModal({ program, open, onOpenChange }: EditProgramModalProps) {
   const router = useRouter();
   const t = useI18n();
-  const [activeTab, setActiveTab] = useState("fr");
+  const [activeTab, setActiveTab] = useState("en");
   const [formData, setFormData] = useState({
     title: program.title,
     titleEn: program.titleEn,
@@ -73,7 +73,6 @@ export function EditProgramModal({ program, open, onOpenChange }: EditProgramMod
         descriptionRu: "",
         descriptionZhCn: "",
       });
-      setActiveTab("fr");
       onOpenChange(false);
       router.refresh();
     } catch (error) {
@@ -85,7 +84,6 @@ export function EditProgramModal({ program, open, onOpenChange }: EditProgramMod
   };
 
   const handleClose = () => {
-    setActiveTab("fr");
     onOpenChange(false);
   };
 
@@ -133,81 +131,31 @@ export function EditProgramModal({ program, open, onOpenChange }: EditProgramMod
         </div>
 
         <div className="space-y-6">
-          {/* Language Tabs */}
-          <div className="tabs tabs-boxed">
-            <button
-              className={`tab ${activeTab === "fr" ? "tab-active" : ""}`}
-              onClick={() => setActiveTab("fr")}
-              type="button"
-            >
-              {t("admin.programs.edit_program_modal.tabs.fr")}
-            </button>
-            <button
-              className={`tab ${activeTab === "en" ? "tab-active" : ""}`}
-              onClick={() => setActiveTab("en")}
-              type="button"
-            >
-              {t("admin.programs.edit_program_modal.tabs.en")}
-            </button>
+          <div className="space-y-4">
+            <div>
+              <label className="label">
+                <span className="label-text">{t("admin.programs.edit_program_modal.labels.title")}</span>
+              </label>
+              <input
+                className="input input-bordered w-full"
+                disabled={isSaving}
+                onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
+                type="text"
+                value={formData.titleEn}
+              />
+            </div>
+            <div>
+              <label className="label">
+                <span className="label-text">{t("admin.programs.edit_program_modal.labels.description")}</span>
+              </label>
+              <textarea
+                className="textarea textarea-bordered w-full h-24"
+                disabled={isSaving}
+                onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+                value={formData.descriptionEn}
+              />
+            </div>
           </div>
-
-          {/* French Fields */}
-          {activeTab === "fr" && (
-            <div className="space-y-4">
-              <div>
-                <label className="label">
-                  <span className="label-text">{t("admin.programs.edit_program_modal.labels.title")} (Français)</span>
-                </label>
-                <input
-                  className="input input-bordered w-full"
-                  disabled={isSaving}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  type="text"
-                  value={formData.title}
-                />
-              </div>
-              <div>
-                <label className="label">
-                  <span className="label-text">{t("admin.programs.edit_program_modal.labels.description")} (Français)</span>
-                </label>
-                <textarea
-                  className="textarea textarea-bordered w-full h-24"
-                  disabled={isSaving}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  value={formData.description}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* English Fields */}
-          {activeTab === "en" && (
-            <div className="space-y-4">
-              <div>
-                <label className="label">
-                  <span className="label-text">{t("admin.programs.edit_program_modal.labels.title")} (English)</span>
-                </label>
-                <input
-                  className="input input-bordered w-full"
-                  disabled={isSaving}
-                  onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
-                  type="text"
-                  value={formData.titleEn}
-                />
-              </div>
-              <div>
-                <label className="label">
-                  <span className="label-text">{t("admin.programs.edit_program_modal.labels.description")} (English)</span>
-                </label>
-                <textarea
-                  className="textarea textarea-bordered w-full h-24"
-                  disabled={isSaving}
-                  onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
-                  value={formData.descriptionEn}
-                />
-              </div>
-            </div>
-          )}
 
           {/* Image et emoji */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -319,17 +267,22 @@ export function EditProgramModal({ program, open, onOpenChange }: EditProgramMod
             <label className="label">
               <span className="label-text">{t("admin.programs.edit_program_modal.labels.required_equipment")}</span>
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {allEquipmentValues.map((equipment) => (
-                <button
-                  key={equipment}
-                  type="button"
-                  className={`btn text-xs ${formData.equipment.includes(equipment) ? "btn-primary" : "btn-outline"}`}
-                  onClick={() => handleEquipmentChange(equipment)}
-                >
-                  {getEquipmentTranslation(equipment, t, true) as string}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {allEquipmentValues.map((equipment) => {
+                const translation = getEquipmentTranslation(equipment, t);
+                return (
+                  <label className="label cursor-pointer justify-start gap-2" key={equipment}>
+                    <input
+                      checked={formData.equipment.includes(equipment)}
+                      className="checkbox checkbox-sm"
+                      disabled={isSaving}
+                      onChange={() => handleEquipmentChange(equipment)}
+                      type="checkbox"
+                    />
+                    <span className="label-text text-sm">{translation.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 

@@ -32,8 +32,8 @@ export function EditWeekModal({ week, open, onOpenChange }: EditWeekModalProps) 
   const t = useI18n();
   const router = useRouter();
   const [formData, setFormData] = useState({
-    titleEn: week.titleEn,
-    descriptionEn: week.descriptionEn,
+    title: week.title,
+    description: week.description,
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -42,17 +42,17 @@ export function EditWeekModal({ week, open, onOpenChange }: EditWeekModalProps) 
     setIsSaving(true);
     try {
       await updateWeek(week.id, {
-        title: "",
-        description: "",
-        titleEn: formData.titleEn,
-        descriptionEn: formData.descriptionEn,
+        title: formData.title,
+        titleEn: "",
         titleEs: "",
-        descriptionEs: "",
         titlePt: "",
-        descriptionPt: "",
         titleRu: "",
-        descriptionRu: "",
         titleZhCn: "",
+        description: formData.description,
+        descriptionEn: "",
+        descriptionEs: "",
+        descriptionPt: "",
+        descriptionRu: "",
         descriptionZhCn: "",
       });
       onOpenChange(false);
@@ -93,11 +93,11 @@ export function EditWeekModal({ week, open, onOpenChange }: EditWeekModalProps) 
                 <input
                   className="input input-bordered w-full"
                   disabled={isSaving}
-                  onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder={t("admin.programs.edit_week_modal.placeholders.title")}
                   required
                   type="text"
-                  value={formData.titleEn}
+                  value={formData.title}
                 />
               </div>
               <div>
@@ -107,9 +107,9 @@ export function EditWeekModal({ week, open, onOpenChange }: EditWeekModalProps) 
                 <textarea
                   className="textarea textarea-bordered w-full h-24"
                   disabled={isSaving}
-                  onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder={t("admin.programs.edit_week_modal.placeholders.description")}
-                  value={formData.descriptionEn}
+                  value={formData.description}
                 />
               </div>
             </div>

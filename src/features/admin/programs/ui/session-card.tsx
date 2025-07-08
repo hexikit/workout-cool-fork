@@ -34,7 +34,7 @@ export function SessionCard({ session }: SessionCardProps) {
                 <h4 className="font-semibold">
                   {t("admin.programs.session_card.session_title", {
                     number: session.sessionNumber,
-                    title: session.titleEn,
+                    title: session.title,
                   })}
                 </h4>
                 <div className={`badge badge-sm ${session.isPremium ? "badge-primary" : "badge-outline"}`}>
@@ -43,7 +43,7 @@ export function SessionCard({ session }: SessionCardProps) {
                     : t("admin.programs.session_card.free")}
                 </div>
               </div>
-              <p className="text-sm text-base-content/60">{session.descriptionEn}</p>
+              <p className="text-sm text-base-content/60">{session.description}</p>
               <div className="flex items-center gap-4 mt-2 text-sm text-base-content/60">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />

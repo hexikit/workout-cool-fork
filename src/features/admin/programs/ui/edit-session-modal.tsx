@@ -22,8 +22,8 @@ import { updateSession } from "../actions/update-session.action";
 
 const getSessionSchema = (t: ReturnType<typeof useI18n>) =>
   z.object({
-    titleEn: z.string().min(1, t("admin.programs.edit_session_modal.validation.title_required")),
-    descriptionEn: z.string().min(1, t("admin.programs.edit_session_modal.validation.description_required")),
+    title: z.string().min(1, t("admin.programs.edit_session_modal.validation.title_required")),
+    description: z.string().min(1, t("admin.programs.edit_session_modal.validation.description_required")),
     estimatedMinutes: z.number().min(5, t("admin.programs.edit_session_modal.validation.duration_too_short")),
     isPremium: z.boolean(),
     equipment: z.array(z.nativeEnum(ExerciseAttributeValueEnum)),
@@ -37,9 +37,20 @@ interface EditSessionModalProps {
   session: SessionWithExercises;
 }
 
+const getEquipmentOptions = (t: ReturnType<typeof useI18n>) => [
+  { value: ExerciseAttributeValueEnum.BODY_ONLY, label: t("admin.programs.create_program_form.options.equipment.body_only") },
+  { value: ExerciseAttributeValueEnum.DUMBBELL, label: t("admin.programs.create_program_form.options.equipment.dumbbell") },
+  { value: ExerciseAttributeValueEnum.BARBELL, label: t("admin.programs.create_program_form.options.equipment.barbell") },
+  { value: ExerciseAttributeValueEnum.KETTLEBELLS, label: t("admin.programs.create_program_form.options.equipment.kettlebells") },
+  { value: ExerciseAttributeValueEnum.BANDS, label: t("admin.programs.create_program_form.options.equipment.bands") },
+  { value: ExerciseAttributeValueEnum.MACHINE, label: t("admin.programs.create_program_form.options.equipment.machine") },
+  { value: ExerciseAttributeValueEnum.CABLE, label: t("admin.programs.create_program_form.options.equipment.cable") },
+];
+
 export function EditSessionModal({ open, onOpenChange, session }: EditSessionModalProps) {
   const t = useI18n();
   const sessionSchema = getSessionSchema(t);
+  const equipmentOptions = getEquipmentOptions(t);
 
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<ExerciseAttributeValueEnum[]>(session.equipment);
@@ -53,8 +64,8 @@ export function EditSessionModal({ open, onOpenChange, session }: EditSessionMod
   } = useForm<SessionFormData>({
     resolver: zodResolver(sessionSchema),
     defaultValues: {
-      titleEn: session.titleEn,
-      descriptionEn: session.descriptionEn,
+      title: session.title,
+      description: session.description,
       estimatedMinutes: session.estimatedMinutes,
       isPremium: session.isPremium,
       equipment: session.equipment,
@@ -73,21 +84,21 @@ export function EditSessionModal({ open, onOpenChange, session }: EditSessionMod
   const onSubmit = async (data: SessionFormData) => {
     setIsLoading(true);
     try {
-      const slugEn = generateSlug(data.titleEn);
+      const slugEn = generateSlug(data.title);
 
       await updateSession({
         sessionId: session.id,
-        title: "",
-        description: "",
-        titleEn: data.titleEn,
-        descriptionEn: data.descriptionEn,
+        title: data.title,
+        titleEn: "",
         titleEs: "",
-        descriptionEs: "",
         titlePt: "",
-        descriptionPt: "",
         titleRu: "",
-        descriptionRu: "",
         titleZhCn: "",
+        description: data.description,
+        descriptionEn: "",
+        descriptionEs: "",
+        descriptionPt: "",
+        descriptionRu: "",
         descriptionZhCn: "",
         slug: slugEn, // Keep slug for backward compatibility
         slugEn,
@@ -126,14 +137,14 @@ export function EditSessionModal({ open, onOpenChange, session }: EditSessionMod
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit-titleEn">{t("admin.programs.edit_session_modal.labels.title")}</Label>
-              <Input id="edit-titleEn" {...register("titleEn")} />
-              {errors.titleEn && <p className="text-sm text-red-500 mt-1">{errors.titleEn.message}</p>}
+              <Label htmlFor="edit-title">{t("admin.programs.edit_session_modal.labels.title")}</Label>
+              <Input id="edit-title" {...register("title")} />
+              {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
             </div>
             <div>
-              <Label htmlFor="edit-descriptionEn">{t("admin.programs.edit_session_modal.labels.description")}</Label>
-              <Textarea id="edit-descriptionEn" {...register("descriptionEn")} rows={3} />
-              {errors.descriptionEn && <p className="text-sm text-red-500 mt-1">{errors.descriptionEn.message}</p>}
+              <Label htmlFor="edit-description">{t("admin.programs.edit_session_modal.labels.description")}</Label>
+              <Textarea id="edit-description" {...register("description")} rows={3} />
+              {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
             </div>
           </div>
 
@@ -158,14 +169,14 @@ export function EditSessionModal({ open, onOpenChange, session }: EditSessionMod
           <div>
             <Label>{t("admin.programs.edit_session_modal.labels.required_equipment")}</Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {allEquipmentValues.map((option) => (
+              {equipmentOptions.map((option) => (
                 <Badge
                   className="cursor-pointer"
-                  key={option}
-                  onClick={() => toggleEquipment(option)}
-                  variant={selectedEquipment.includes(option) ? "default" : "outline"}
+                  key={option.value}
+                  onClick={() => toggleEquipment(option.value)}
+                  variant={selectedEquipment.includes(option.value) ? "default" : "outline"}
                 >
-                  {getEquipmentTranslation(option, t, true) as string}
+                  {option.label}
                 </Badge>
               ))}
             </div>

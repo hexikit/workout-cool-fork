@@ -124,19 +124,20 @@ export function CreateProgramForm({ currentStep, onStepComplete, onSuccess, onCa
         setIsLoading(false);
         return;
       }
+      const validatedData = finalValidation.data;
 
       await createProgram({
-        ...finalValidation.data,
-        titleEn: "",
-        titleEs: "",
-        titlePt: "",
-        titleRu: "",
-        titleZhCn: "",
-        descriptionEn: "",
-        descriptionEs: "",
-        descriptionPt: "",
-        descriptionRu: "",
-        descriptionZhCn: "",
+        ...validatedData,
+        titleEn: validatedData.title,
+        titleEs: validatedData.title,
+        titlePt: validatedData.title,
+        titleRu: validatedData.title,
+        titleZhCn: validatedData.title,
+        descriptionEn: validatedData.description,
+        descriptionEs: validatedData.description,
+        descriptionPt: validatedData.description,
+        descriptionRu: validatedData.description,
+        descriptionZhCn: validatedData.description,
       });
       // await createProgram(data);
       onSuccess();
