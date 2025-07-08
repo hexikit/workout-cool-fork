@@ -39,33 +39,33 @@ export function WorkoutSessionSets({
   const prevExerciseIndexRef = useRef<number>(currentExerciseIndex);
 
   // auto-scroll to current exercise when index changes (but not when adding sets)
-  useEffect(() => {
-    if (session && currentExerciseIndex >= 0 && prevExerciseIndexRef.current !== currentExerciseIndex) {
-      const exerciseElement = document.getElementById(`exercise-${currentExerciseIndex}`);
-      if (exerciseElement) {
-        const scrollContainer = exerciseElement.closest(".overflow-auto");
+  // useEffect(() => {
+  //   if (session && currentExerciseIndex >= 0 && prevExerciseIndexRef.current !== currentExerciseIndex) {
+  //     const exerciseElement = document.getElementById(`exercise-${currentExerciseIndex}`);
+  //     if (exerciseElement) {
+  //       const scrollContainer = exerciseElement.closest(".overflow-auto");
 
-        if (scrollContainer) {
-          const containerRect = scrollContainer.getBoundingClientRect();
-          const elementRect = exerciseElement.getBoundingClientRect();
-          const offset = 10;
+  //       if (scrollContainer) {
+  //         const containerRect = scrollContainer.getBoundingClientRect();
+  //         const elementRect = exerciseElement.getBoundingClientRect();
+  //         const offset = 10;
 
-          const scrollTop = scrollContainer.scrollTop + elementRect.top - containerRect.top - offset;
+  //         const scrollTop = scrollContainer.scrollTop + elementRect.top - containerRect.top - offset;
 
-          scrollContainer.scrollTo({
-            top: scrollTop,
-            behavior: "smooth",
-          });
-        } else {
-          exerciseElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
-      }
-      prevExerciseIndexRef.current = currentExerciseIndex;
-    }
-  }, [currentExerciseIndex, session]);
+  //         scrollContainer.scrollTo({
+  //           top: scrollTop,
+  //           behavior: "smooth",
+  //         });
+  //       } else {
+  //         exerciseElement.scrollIntoView({
+  //           behavior: "smooth",
+  //           block: "center",
+  //         });
+  //       }
+  //     }
+  //     prevExerciseIndexRef.current = currentExerciseIndex;
+  //   }
+  // }, [currentExerciseIndex, session]);
 
   if (showCongrats) {
     return (

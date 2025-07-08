@@ -455,7 +455,7 @@ export function ProgramDetailPage({ program, isAuthenticated }: ProgramDetailPag
                           }`}
                           key={session.id}
                           onClick={() => {
-                            window.location.href = `/${currentLocale}/programs/${program.slug}/session/${sessionSlug}`;
+                            window.location.href = `/${currentLocale}/programs/${program.slug}/interactive-session/${sessionSlug}`;
                           }}
                         >
                           {/* Session Number Badge */}

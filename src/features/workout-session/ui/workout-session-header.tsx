@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { X, Target, Weight } from "lucide-react";
 
 import { useCurrentLocale, useI18n } from "locales/client";
@@ -17,12 +17,56 @@ interface WorkoutSessionHeaderProps {
 
 export function WorkoutSessionHeader({ onQuitWorkout }: WorkoutSessionHeaderProps) {
   const t = useI18n();
+  const locale = useCurrentLocale();
   const [showQuitDialog, setShowQuitDialog] = useState(false);
   const [volumeUnit, setVolumeUnit] = useState<WeightUnit>("kg");
-  const locale = useCurrentLocale();
-  const { getExercisesCompleted, getTotalExercises, session, getTotalVolumeInUnit } = useWorkoutSession();
+  const {
+    getExercisesCompleted, 
+    getTotalExercises,
+    session,
+    getTotalVolumeInUnit,
+    currentExercise,
+    currentExerciseIndex,
+    currentSetIndex,
+  } = useWorkoutSession();
   const exercisesCompleted = getExercisesCompleted();
   const totalExercises = getTotalExercises();
+  
+  const { totalSetsInWorkout, progressPercentage, currentExerciseName, setProgressText } = useMemo(() => {
+    // Guard against missing session or exercise data
+    if (!session || !currentExercise) {
+      return { totalSetsInWorkout: 0, progressPercentage: 0, currentExerciseName: "", setProgressText: "" };
+    }
+
+    // 1. Calculate the total number of sets in the entire workout
+    const totalSets = session.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+    if (totalSets === 0) return { totalSetsInWorkout: 0, progressPercentage: 0, currentExerciseName: "", setProgressText: "" };
+
+    // 2. Calculate how many sets have been passed so far
+    let setsCompleted = 0;
+    // Add sets from all previous exercises
+    for (let i = 0; i < currentExerciseIndex; i++) {
+      setsCompleted += session.exercises[i]?.sets.length || 0;
+    }
+    // Add the sets from the current exercise up to the current set
+    setsCompleted += currentSetIndex;
+
+    // 3. Calculate the percentage
+    const percentage = (setsCompleted / totalSets) * 100;
+
+    // 4. Get display text
+    const name = locale === "fr" ? currentExercise.name : currentExercise.nameEn || currentExercise.name;
+    const progressText = `${t("programs.set", { count: 1 })} ${currentSetIndex + 1} / ${currentExercise.sets.length}`;
+
+    return {
+      totalSetsInWorkout: totalSets,
+      progressPercentage: percentage,
+      currentExerciseName: name,
+      setProgressText: progressText,
+    };
+    // Update dependencies for the memoized calculation
+  }, [session, currentExercise, currentExerciseIndex, currentSetIndex, t, locale]);
+
   const totalVolume = getTotalVolumeInUnit(volumeUnit);
 
   // Format time with animated colons
@@ -84,78 +128,31 @@ export function WorkoutSessionHeader({ onQuitWorkout }: WorkoutSessionHeaderProp
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {/* Card 1: Exercise Progress */}
-            <div className="bg-white dark:bg-slate-800 rounded-md p-2 border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
-                  <Target className="h-3 w-3 text-purple-400" />
+          {/* New Interactive Progress Section */}
+          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+            {/* Progress Bar */}
+            <div className="mb-2">
+              <div className="relative w-full h-1.5 bg-gray-600 rounded-full">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-green-400 rounded-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+                {/* Segments for each set */}
+                <div className="absolute top-0 left-0 w-full h-full flex">
+                  {Array.from({ length: totalSetsInWorkout }).map((_, i) => (
+                    <div key={i} className="flex-1 border-r border-gray-900 last:border-r-0" />
+                  ))}
                 </div>
-                <h3 className="text-slate-700 dark:text-white font-medium text-xs truncate">
-                  {t("workout_builder.session.exercise_progress")}
-                </h3>
               </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">{exercisesCompleted}</span>
-                  <span className="text-slate-400 text-sm">/ {totalExercises}</span>
-                </div>
-
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 ease-out"
-                    style={{ width: `${(exercisesCompleted / totalExercises) * 100}%` }}
-                  />
-                </div>
-
-                <div className="text-center">
-                  <span className="text-xs text-slate-400">
-                    {Math.round((exercisesCompleted / totalExercises) * 100)}% {t("workout_builder.session.complete")}
-                  </span>
-                </div>
+              <div className="text-right text-xs text-gray-400 mt-1">
+                {Math.round(progressPercentage)}% {t("workout_builder.session.complete")}
               </div>
             </div>
 
-            {/* Card 2: Total Volume */}
-            <div className="bg-white dark:bg-slate-800 rounded-md p-2 border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0">
-                  <Weight className="h-3 w-3 text-orange-400" />
-                </div>
-                <h3 className="text-slate-700 dark:text-white font-medium text-xs truncate">{t("workout_builder.session.total_volume")}</h3>
-              </div>
-
-              <div className="text-center">
-                <div className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-                  {totalVolume.toFixed(volumeUnit === "lbs" ? 1 : 0)}
-                </div>
-                <div className="flex items-center justify-center gap-1">
-                  <button
-                    className={cn(
-                      "text-xs px-1.5 py-0.5 rounded transition-colors",
-                      volumeUnit === "kg"
-                        ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100"
-                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
-                    )}
-                    onClick={() => handleVolumeUnitChange("kg")}
-                  >
-                    kg
-                  </button>
-                  <span className="text-slate-300 dark:text-slate-600">|</span>
-                  <button
-                    className={cn(
-                      "text-xs px-1.5 py-0.5 rounded transition-colors",
-                      volumeUnit === "lbs"
-                        ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100"
-                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
-                    )}
-                    onClick={() => handleVolumeUnitChange("lbs")}
-                  >
-                    lbs
-                  </button>
-                </div>
-              </div>
+            {/* Current Exercise Info */}
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-white truncate">{currentExerciseName}</h3>
+              <p className="text-sm font-medium text-gray-400">{setProgressText}</p>
             </div>
           </div>
         </div>

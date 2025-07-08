@@ -26,6 +26,7 @@ interface WorkoutSessionState {
   isWorkoutActive: boolean;
   currentExerciseIndex: number;
   currentExercise: WorkoutSessionExercise | null;
+  currentSetIndex: number;
 
   // Progression
   exercisesCompleted: number;
@@ -46,6 +47,8 @@ interface WorkoutSessionState {
   goToNextExercise: () => void;
   goToPrevExercise: () => void;
   goToExercise: (targetIndex: number) => void;
+  goToNextSet: () => void;
+  goToPrevSet: () => void;
   formatElapsedTime: () => string;
   getExercisesCompleted: () => number;
   getTotalExercises: () => number;
@@ -65,6 +68,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => 
   exercisesCompleted: 0,
   totalExercises: 0,
   progressPercent: 0,
+  currentSetIndex: 0,
 
   startWorkout: (exercises, _equipment, muscles) => {
     const sessionExercises: WorkoutSessionExercise[] = exercises.map((ex, idx) => {
@@ -112,6 +116,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => 
       isTimerRunning: false,
       isWorkoutActive: true,
       currentExercise: sessionExercises[0],
+      currentSetIndex: 0,
     });
   },
 
@@ -128,6 +133,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => 
       isWorkoutActive: false,
       currentExerciseIndex: 0,
       currentExercise: null,
+      currentSetIndex: 0,
     });
   },
 
@@ -274,42 +280,74 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => 
       const exercisesCompleted = get().exercisesCompleted;
       set({ exercisesCompleted: exercisesCompleted + 1 });
     }
+
+    get().goToNextSet();
   },
 
   goToNextExercise: () => {
-    const { session, currentExerciseIndex } = get();
-    if (!session) return;
-    const idx = currentExerciseIndex;
-    if (idx < session.exercises.length - 1) {
-      workoutSessionLocal.update(session.id, { currentExerciseIndex: idx + 1 });
-      set({
-        currentExerciseIndex: idx + 1,
-        currentExercise: session.exercises[idx + 1],
-      });
+    const { currentExerciseIndex, session } = get();
+    if (session && currentExerciseIndex < session.exercises.length - 1) {
+      get().goToExercise(currentExerciseIndex + 1);
     }
   },
 
   goToPrevExercise: () => {
-    const { session, currentExerciseIndex } = get();
-    if (!session) return;
-    const idx = currentExerciseIndex;
-    if (idx > 0) {
-      workoutSessionLocal.update(session.id, { currentExerciseIndex: idx - 1 });
-      set({
-        currentExerciseIndex: idx - 1,
-        currentExercise: session.exercises[idx - 1],
-      });
+    const { currentExerciseIndex } = get();
+    if (currentExerciseIndex > 0) {
+      get().goToExercise(currentExerciseIndex - 1);
     }
   },
 
   goToExercise: (targetIndex) => {
     const { session } = get();
     if (!session) return;
+    
     if (targetIndex >= 0 && targetIndex < session.exercises.length) {
       workoutSessionLocal.update(session.id, { currentExerciseIndex: targetIndex });
+      
       set({
         currentExerciseIndex: targetIndex,
         currentExercise: session.exercises[targetIndex],
+        currentSetIndex: 0, // ALWAYS start on the first set of a new exercise
+      });
+    }
+  },
+
+  goToNextSet: () => {
+    const { session, currentExerciseIndex, currentSetIndex } = get();
+    if (!session) return;
+
+    const currentExercise = session.exercises[currentExerciseIndex];
+    
+    // If there are more sets in the current exercise
+    if (currentSetIndex < currentExercise.sets.length - 1) {
+      set({ currentSetIndex: currentSetIndex + 1 });
+    } 
+    // If it's the last set, try to go to the next exercise
+    else if (currentExerciseIndex < session.exercises.length - 1) {
+      get().goToNextExercise(); // This will also reset the set index
+    }
+  },
+
+  goToPrevSet: () => {
+    const { session, currentExerciseIndex, currentSetIndex } = get();
+    if (!session) return;
+
+    // If we are not on the first set of the current exercise
+    if (currentSetIndex > 0) {
+      set({ currentSetIndex: currentSetIndex - 1 });
+    } 
+    // If it's the first set, try to go to the previous exercise
+    else if (currentExerciseIndex > 0) {
+      const prevExerciseIndex = currentExerciseIndex - 1;
+      const prevExercise = session.exercises[prevExerciseIndex];
+      const lastSetIndexOfPrevExercise = prevExercise.sets.length - 1;
+      
+      // Go to the previous exercise AND set the index to its last set
+      set({
+        currentExerciseIndex: prevExerciseIndex,
+        currentExercise: prevExercise,
+        currentSetIndex: lastSetIndexOfPrevExercise
       });
     }
   },
@@ -406,13 +444,15 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => 
     if (currentId) {
       const session = workoutSessionLocal.getById(currentId);
       if (session && session.status === "active") {
+        const persistedExerciseIndex = session.currentExerciseIndex ?? 0;
+        // NOTE: We are not persisting `currentSetIndex` for simplicity.
+        // The session will always resume at the first set of the last active exercise.
         set({
           session,
           isWorkoutActive: true,
-          currentExerciseIndex: session.currentExerciseIndex ?? 0,
-          currentExercise: session.exercises[session.currentExerciseIndex ?? 0],
-          elapsedTime: 0,
-          isTimerRunning: false,
+          currentExerciseIndex: persistedExerciseIndex,
+          currentExercise: session.exercises[persistedExerciseIndex],
+          currentSetIndex: 0, // Reset set index on load
         });
       }
     }
