@@ -69,7 +69,7 @@ export async function createProgram(data: CreateProgramData) {
   });
 
   if (existingProgram) {
-    throw new Error("Un programme avec ce nom existe déjà dans une des langues");
+    throw new Error("Program already exists in one of the languages");
   }
 
   const program = await prisma.program.create({

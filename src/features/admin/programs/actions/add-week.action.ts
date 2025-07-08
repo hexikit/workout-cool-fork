@@ -45,7 +45,7 @@ export async function addWeekToProgram(data: AddWeekData) {
   });
 
   if (existingWeek) {
-    throw new Error(`La semaine ${data.weekNumber} existe déjà`);
+    throw new Error(`Week ${data.weekNumber} already exists`);
   }
 
   const week = await prisma.programWeek.create({

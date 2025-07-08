@@ -58,6 +58,6 @@ export async function updateWeek(weekId: string, data: UpdateWeekData) {
     return updatedWeek;
   } catch (error) {
     console.error("Error updating week:", error);
-    throw new Error("Erreur lors de la mise à jour de la semaine");
+    throw new Error("Error updating week");
   }
 }

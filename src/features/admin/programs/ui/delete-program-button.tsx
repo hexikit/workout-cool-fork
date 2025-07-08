@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { useI18n } from "../../../../../locales/client";
 
 import { deleteProgram } from "../actions/delete-program.action";
 
@@ -15,6 +16,7 @@ export function DeleteProgramButton({ programId, programTitle }: DeleteProgramBu
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const t = useI18n();
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -24,7 +26,7 @@ export function DeleteProgramButton({ programId, programTitle }: DeleteProgramBu
       router.refresh();
     } catch (error) {
       console.error("Error deleting program:", error);
-      alert(error instanceof Error ? error.message : "Erreur lors de la suppression");
+      alert(error instanceof Error ? error.message : t("admin.programs.delete_program_button.error_message"));
     } finally {
       setIsDeleting(false);
     }
@@ -32,48 +34,42 @@ export function DeleteProgramButton({ programId, programTitle }: DeleteProgramBu
 
   return (
     <>
-      <button 
-        className="btn btn-outline btn-sm px-2"
-        onClick={() => setIsModalOpen(true)}
-      >
+      <button className="btn btn-outline btn-sm px-2" onClick={() => setIsModalOpen(true)}>
         <Trash2 className="h-4 w-4 text-error" />
       </button>
 
       {isModalOpen && (
         <div className="modal modal-open">
           <div className="modal-box">
-            <h3 className="font-bold text-lg">Confirmer la suppression</h3>
+            <h3 className="font-bold text-lg">{t("admin.programs.delete_program_button.title")}</h3>
             <p className="py-4">
-              Êtes-vous sûr de vouloir supprimer le programme <strong>{programTitle}</strong> ?
-              Cette action est irréversible.
+              {t("admin.programs.delete_program_button.confirmation_prefix")} <strong>{programTitle}</strong>
+              {t("admin.programs.delete_program_button.confirmation_suffix")}
             </p>
             {/* Warning if program has enrollments */}
             <div className="alert alert-warning">
               <svg className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                />
               </svg>
-              <span>Cette action supprimera toutes les semaines, séances et exercices associés.</span>
+              <span>{t("admin.programs.delete_program_button.warning_message")}</span>
             </div>
             <div className="modal-action">
-              <button 
-                className="btn btn-outline" 
-                disabled={isDeleting}
-                onClick={() => setIsModalOpen(false)}
-              >
-                Annuler
+              <button className="btn btn-outline" disabled={isDeleting} onClick={() => setIsModalOpen(false)}>
+                {t("admin.programs.delete_program_button.cancel_button")}
               </button>
-              <button 
-                className="btn btn-error" 
-                disabled={isDeleting}
-                onClick={handleDelete}
-              >
+              <button className="btn btn-error" disabled={isDeleting} onClick={handleDelete}>
                 {isDeleting ? (
                   <>
                     <span className="loading loading-spinner loading-sm"></span>
-                    Suppression...
+                    {t("admin.programs.delete_program_button.delete_button_loading")}
                   </>
                 ) : (
-                  "Supprimer"
+                  t("admin.programs.delete_program_button.delete_button")
                 )}
               </button>
             </div>

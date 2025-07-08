@@ -172,7 +172,7 @@ export function WorkoutStepper() {
           <Button onClick={goToProfile}>{t("commons.go_to_profile")}</Button>
         </div>
         {/* Donation Modal */}
-        <DonationModal isOpen={showModal} onClose={closeModal} />
+        {/* <DonationModal isOpen={showModal} onClose={closeModal} /> */}
       </>
     );
   }

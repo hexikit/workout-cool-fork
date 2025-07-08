@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Archive, ChevronDown } from "lucide-react";
 import { ProgramVisibility } from "@prisma/client";
 
+import { useI18n } from "../../../../../locales/client";
 import { updateProgramVisibility } from "../actions/update-program-visibility.action";
 
 interface VisibilityBadgeProps {
@@ -12,30 +13,28 @@ interface VisibilityBadgeProps {
   currentVisibility: ProgramVisibility;
 }
 
-const visibilityConfig = {
-  [ProgramVisibility.DRAFT]: {
-    label: "Brouillon",
-    icon: EyeOff,
-    color: "badge-warning",
-  },
-  [ProgramVisibility.PUBLISHED]: {
-    label: "Publié",
-    icon: Eye,
-    color: "badge-success",
-  },
-  [ProgramVisibility.ARCHIVED]: {
-    label: "Archivé",
-    icon: Archive,
-    color: "badge-neutral",
-  },
-};
-
 export function VisibilityBadge({ programId, currentVisibility }: VisibilityBadgeProps) {
+  const t = useI18n();
   const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
 
-  const config = visibilityConfig[currentVisibility];
-  const Icon = config.icon;
+  const visibilityConfig = {
+    [ProgramVisibility.DRAFT]: {
+      label: t("admin.programs.visibility_badge.draft"),
+      icon: EyeOff,
+      color: "badge-warning",
+    },
+    [ProgramVisibility.PUBLISHED]: {
+      label: t("admin.programs.visibility_badge.published"),
+      icon: Eye,
+      color: "badge-success",
+    },
+    [ProgramVisibility.ARCHIVED]: {
+      label: t("admin.programs.visibility_badge.archived"),
+      icon: Archive,
+      color: "badge-neutral",
+    },
+  };
 
   const handleVisibilityChange = async (newVisibility: ProgramVisibility) => {
     if (newVisibility === currentVisibility) {
@@ -53,6 +52,9 @@ export function VisibilityBadge({ programId, currentVisibility }: VisibilityBadg
       setIsUpdating(false);
     }
   };
+
+  const config = visibilityConfig[currentVisibility];
+  const Icon = config.icon;
 
   return (
     <div className="dropdown dropdown-end">

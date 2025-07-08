@@ -47,7 +47,7 @@ export async function addExerciseToSession(data: AddExerciseData) {
   });
 
   if (existingExercise) {
-    throw new Error(`Un exercice existe déjà à la position ${data.order}`);
+    throw new Error(`An exercise already exists at position ${data.order}`);
   }
 
   const programSessionExercise = await prisma.programSessionExercise.create({

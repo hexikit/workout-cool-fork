@@ -54,7 +54,7 @@ export async function addSessionToWeek(data: AddSessionData) {
   });
 
   if (existingSession) {
-    throw new Error(`La séance ${data.sessionNumber} existe déjà dans cette semaine`);
+    throw new Error(`Session ${data.sessionNumber} already exists in this week`);
   }
 
   const programSession = await prisma.programSession.create({

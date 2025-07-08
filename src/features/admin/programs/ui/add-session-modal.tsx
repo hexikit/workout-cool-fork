@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { ExerciseAttributeValueEnum } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useI18n } from "../../../../../locales/client";
 
 import { generateSlugsForAllLanguages } from "@/shared/lib/slug";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,25 +18,16 @@ import { Badge } from "@/components/ui/badge";
 
 import { addSessionToWeek } from "../actions/add-session.action";
 
-const sessionSchema = z.object({
-  title: z.string().min(1, "Le titre est requis"),
-  titleEn: z.string().min(1, "Le titre en anglais est requis"),
-  titleEs: z.string().min(1, "Le titre en espagnol est requis"),
-  titlePt: z.string().min(1, "Le titre en portugais est requis"),
-  titleRu: z.string().min(1, "Le titre en russe est requis"),
-  titleZhCn: z.string().min(1, "Le titre en chinois est requis"),
-  description: z.string().min(1, "La description est requise"),
-  descriptionEn: z.string().min(1, "La description en anglais est requise"),
-  descriptionEs: z.string().min(1, "La description en espagnol est requise"),
-  descriptionPt: z.string().min(1, "La description en portugais est requise"),
-  descriptionRu: z.string().min(1, "La description en russe est requise"),
-  descriptionZhCn: z.string().min(1, "La description en chinois est requise"),
-  estimatedMinutes: z.number().min(5, "Au moins 5 minutes"),
-  isPremium: z.boolean(),
-  equipment: z.array(z.nativeEnum(ExerciseAttributeValueEnum)),
-});
+const getSessionSchema = (t: any) =>
+  z.object({
+    title: z.string().min(1, t("admin.programs.add_session_modal.validation.title_required")),
+    description: z.string().min(1, t("admin.programs.add_session_modal.validation.description_required")),
+    estimatedMinutes: z.number().min(5, t("admin.programs.add_session_modal.validation.estimated_minutes_min")),
+    isPremium: z.boolean(),
+    equipment: z.array(z.nativeEnum(ExerciseAttributeValueEnum)),
+  });
 
-type SessionFormData = z.infer<typeof sessionSchema>;
+type SessionFormData = z.infer<ReturnType<typeof getSessionSchema>>;
 
 interface AddSessionModalProps {
   open: boolean;
@@ -44,20 +36,24 @@ interface AddSessionModalProps {
   nextSessionNumber: number;
 }
 
-const EQUIPMENT_OPTIONS = [
-  { value: ExerciseAttributeValueEnum.BODY_ONLY, label: "Poids du corps" },
-  { value: ExerciseAttributeValueEnum.DUMBBELL, label: "Haltères" },
-  { value: ExerciseAttributeValueEnum.BARBELL, label: "Barre" },
-  { value: ExerciseAttributeValueEnum.KETTLEBELLS, label: "Kettlebells" },
-  { value: ExerciseAttributeValueEnum.BANDS, label: "Élastiques" },
-  { value: ExerciseAttributeValueEnum.MACHINE, label: "Machines" },
-  { value: ExerciseAttributeValueEnum.CABLE, label: "Câbles" },
+const getEquipmentOptions = (t: any) => [
+  { value: ExerciseAttributeValueEnum.BODY_ONLY, label: t("admin.programs.add_session_modal.equipment.body_only") },
+  { value: ExerciseAttributeValueEnum.DUMBBELL, label: t("admin.programs.add_session_modal.equipment.dumbbell") },
+  { value: ExerciseAttributeValueEnum.BARBELL, label: t("admin.programs.add_session_modal.equipment.barbell") },
+  { value: ExerciseAttributeValueEnum.KETTLEBELLS, label: t("admin.programs.add_session_modal.equipment.kettlebells") },
+  { value: ExerciseAttributeValueEnum.BANDS, label: t("admin.programs.add_session_modal.equipment.bands") },
+  { value: ExerciseAttributeValueEnum.MACHINE, label: t("admin.programs.add_session_modal.equipment.machine") },
+  { value: ExerciseAttributeValueEnum.CABLE, label: t("admin.programs.add_session_modal.equipment.cable") },
 ];
 
 export function AddSessionModal({ open, onOpenChange, weekId, nextSessionNumber }: AddSessionModalProps) {
+  const t = useI18n();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("fr");
+  const [activeTab, setActiveTab] = useState("en");
   const [selectedEquipment, setSelectedEquipment] = useState<ExerciseAttributeValueEnum[]>([]);
+
+  const sessionSchema = getSessionSchema(t);
+  const EQUIPMENT_OPTIONS = getEquipmentOptions(t);
 
   const {
     register,
@@ -68,18 +64,8 @@ export function AddSessionModal({ open, onOpenChange, weekId, nextSessionNumber 
   } = useForm<SessionFormData>({
     resolver: zodResolver(sessionSchema),
     defaultValues: {
-      title: `Séance ${nextSessionNumber}`,
-      titleEn: `Session ${nextSessionNumber}`,
-      titleEs: `Sesión ${nextSessionNumber}`,
-      titlePt: `Sessão ${nextSessionNumber}`,
-      titleRu: `Сессия ${nextSessionNumber}`,
-      titleZhCn: `第${nextSessionNumber}节`,
-      description: `Description de la séance ${nextSessionNumber}`,
-      descriptionEn: `Description of session ${nextSessionNumber}`,
-      descriptionEs: `Descripción de la sesión ${nextSessionNumber}`,
-      descriptionPt: `Descrição da sessão ${nextSessionNumber}`,
-      descriptionRu: `Описание сессии ${nextSessionNumber}`,
-      descriptionZhCn: `第${nextSessionNumber}节课程描述`,
+      title: t("admin.programs.add_session_modal.title_fr_placeholder", { number: nextSessionNumber }),
+      description: t("admin.programs.add_session_modal.description_fr_placeholder"),
       estimatedMinutes: 30,
       isPremium: true,
       equipment: [],
@@ -95,17 +81,16 @@ export function AddSessionModal({ open, onOpenChange, weekId, nextSessionNumber 
     setValue("equipment", newEquipment);
   };
 
-  const onSubmit = async (data: SessionFormData) => {
+  const onSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      // Generate slugs from titles
       const slugs = generateSlugsForAllLanguages({
         title: data.title,
-        titleEn: data.titleEn,
-        titleEs: data.titleEs,
-        titlePt: data.titlePt,
-        titleRu: data.titleRu,
-        titleZhCn: data.titleZhCn,
+        titleEn: data.title,
+        titleEs: data.title,
+        titlePt: data.title,
+        titleRu: data.title,
+        titleZhCn: data.title,
       });
 
       await addSessionToWeek({
@@ -113,15 +98,25 @@ export function AddSessionModal({ open, onOpenChange, weekId, nextSessionNumber 
         sessionNumber: nextSessionNumber,
         ...data,
         ...slugs,
+        titleEn: "",
+        titleEs: "",
+        titlePt: "",
+        titleRu: "",
+        titleZhCn: "",
+        descriptionEn: "",
+        descriptionEs: "",
+        descriptionPt: "",
+        descriptionRu: "",
+        descriptionZhCn: "",
       });
 
       reset();
       setSelectedEquipment([]);
       onOpenChange(false);
-      window.location.reload(); // Refresh to show new session
+      window.location.reload();
     } catch (error) {
       console.error("Error adding session:", error);
-      alert("Erreur lors de l'ajout de la séance");
+      alert(t("admin.programs.add_session_modal.add_session_error"));
     } finally {
       setIsLoading(false);
     }
@@ -138,142 +133,46 @@ export function AddSessionModal({ open, onOpenChange, weekId, nextSessionNumber 
     <Dialog onOpenChange={handleClose} open={open}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Ajouter une séance</DialogTitle>
+          <DialogTitle>{t("admin.programs.add_session_modal.title")}</DialogTitle>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          {/* Language Tabs */}
-          <div className="tabs tabs-boxed">
-            <button className={`tab ${activeTab === "fr" ? "tab-active" : ""}`} onClick={() => setActiveTab("fr")} type="button">
-              🇫🇷 FR
-            </button>
-            <button className={`tab ${activeTab === "en" ? "tab-active" : ""}`} onClick={() => setActiveTab("en")} type="button">
-              🇺🇸 EN
-            </button>
-            <button className={`tab ${activeTab === "es" ? "tab-active" : ""}`} onClick={() => setActiveTab("es")} type="button">
-              🇪🇸 ES
-            </button>
-            <button className={`tab ${activeTab === "pt" ? "tab-active" : ""}`} onClick={() => setActiveTab("pt")} type="button">
-              🇵🇹 PT
-            </button>
-            <button className={`tab ${activeTab === "ru" ? "tab-active" : ""}`} onClick={() => setActiveTab("ru")} type="button">
-              🇷🇺 RU
-            </button>
-            <button className={`tab ${activeTab === "zh" ? "tab-active" : ""}`} onClick={() => setActiveTab("zh")} type="button">
-              🇨🇳 ZH
-            </button>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">{t("admin.programs.add_session_modal.title_en_label")}</Label>
+              <Input
+                id="title"
+                {...register("title")}
+                placeholder={t("admin.programs.add_session_modal.title_en_placeholder", { number: nextSessionNumber })}
+              />
+              {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="description">{t("admin.programs.add_session_modal.description_en_label")}</Label>
+              <Textarea
+                id="description"
+                {...register("description")}
+                placeholder={t("admin.programs.add_session_modal.description_en_placeholder")}
+                rows={3}
+              />
+              {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
+            </div>
           </div>
-
-          {/* French Fields */}
-          {activeTab === "fr" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Titre (Français)</Label>
-                <Input id="title" {...register("title")} placeholder={`Séance ${nextSessionNumber}`} />
-                {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="description">Description (Français)</Label>
-                <Textarea id="description" {...register("description")} placeholder="Description de cette séance..." rows={3} />
-                {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* English Fields */}
-          {activeTab === "en" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="titleEn">Title (English)</Label>
-                <Input id="titleEn" {...register("titleEn")} placeholder={`Session ${nextSessionNumber}`} />
-                {errors.titleEn && <p className="text-sm text-red-500 mt-1">{errors.titleEn.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="descriptionEn">Description (English)</Label>
-                <Textarea id="descriptionEn" {...register("descriptionEn")} placeholder="Session description..." rows={3} />
-                {errors.descriptionEn && <p className="text-sm text-red-500 mt-1">{errors.descriptionEn.message}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* Spanish Fields */}
-          {activeTab === "es" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="titleEs">Título (Español)</Label>
-                <Input id="titleEs" {...register("titleEs")} placeholder={`Sesión ${nextSessionNumber}`} />
-                {errors.titleEs && <p className="text-sm text-red-500 mt-1">{errors.titleEs.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="descriptionEs">Descripción (Español)</Label>
-                <Textarea id="descriptionEs" {...register("descriptionEs")} placeholder="Descripción de la sesión..." rows={3} />
-                {errors.descriptionEs && <p className="text-sm text-red-500 mt-1">{errors.descriptionEs.message}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* Portuguese Fields */}
-          {activeTab === "pt" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="titlePt">Título (Português)</Label>
-                <Input id="titlePt" {...register("titlePt")} placeholder={`Sessão ${nextSessionNumber}`} />
-                {errors.titlePt && <p className="text-sm text-red-500 mt-1">{errors.titlePt.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="descriptionPt">Descrição (Português)</Label>
-                <Textarea id="descriptionPt" {...register("descriptionPt")} placeholder="Descrição da sessão..." rows={3} />
-                {errors.descriptionPt && <p className="text-sm text-red-500 mt-1">{errors.descriptionPt.message}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* Russian Fields */}
-          {activeTab === "ru" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="titleRu">Название (Русский)</Label>
-                <Input id="titleRu" {...register("titleRu")} placeholder={`Сессия ${nextSessionNumber}`} />
-                {errors.titleRu && <p className="text-sm text-red-500 mt-1">{errors.titleRu.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="descriptionRu">Описание (Русский)</Label>
-                <Textarea id="descriptionRu" {...register("descriptionRu")} placeholder="Описание сессии..." rows={3} />
-                {errors.descriptionRu && <p className="text-sm text-red-500 mt-1">{errors.descriptionRu.message}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* Chinese Fields */}
-          {activeTab === "zh" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="titleZhCn">标题 (中文)</Label>
-                <Input id="titleZhCn" {...register("titleZhCn")} placeholder={`第${nextSessionNumber}节`} />
-                {errors.titleZhCn && <p className="text-sm text-red-500 mt-1">{errors.titleZhCn.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="descriptionZhCn">描述 (中文)</Label>
-                <Textarea id="descriptionZhCn" {...register("descriptionZhCn")} placeholder="课程描述..." rows={3} />
-                {errors.descriptionZhCn && <p className="text-sm text-red-500 mt-1">{errors.descriptionZhCn.message}</p>}
-              </div>
-            </div>
-          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="estimatedMinutes">Durée estimée (minutes)</Label>
+              <Label htmlFor="estimatedMinutes">{t("admin.programs.add_session_modal.estimated_duration_label")}</Label>
               <Input id="estimatedMinutes" min="5" type="number" {...register("estimatedMinutes", { valueAsNumber: true })} />
               {errors.estimatedMinutes && <p className="text-sm text-red-500 mt-1">{errors.estimatedMinutes.message}</p>}
             </div>
             <div className="flex items-center space-x-2 pt-8">
               <Switch defaultChecked={true} id="isPremium" onCheckedChange={(checked) => setValue("isPremium", checked)} />
-              <Label htmlFor="isPremium">Séance premium</Label>
+              <Label htmlFor="isPremium">{t("admin.programs.add_session_modal.premium_session_label")}</Label>
             </div>
           </div>
 
           <div>
-            <Label>Équipement requis</Label>
+            <Label>{t("admin.programs.add_session_modal.required_equipment_label")}</Label>
             <div className="flex flex-wrap gap-2 mt-2">
               {EQUIPMENT_OPTIONS.map((option) => (
                 <Badge
@@ -290,10 +189,12 @@ export function AddSessionModal({ open, onOpenChange, weekId, nextSessionNumber 
 
           <div className="flex justify-end gap-2 pt-4">
             <Button onClick={handleClose} type="button" variant="outline">
-              Annuler
+              {t("admin.programs.add_session_modal.cancel")}
             </Button>
             <Button disabled={isLoading} type="submit">
-              {isLoading ? "Ajout..." : "Ajouter la séance"}
+              {isLoading
+                ? t("admin.programs.add_session_modal.adding_session")
+                : t("admin.programs.add_session_modal.add_session")}
             </Button>
           </div>
         </form>

@@ -70,7 +70,7 @@ export async function updateProgram(programId: string, data: UpdateProgramData) 
     });
 
     if (existingProgram) {
-      throw new Error("Un programme avec ce nom existe déjà dans une des langues");
+      throw new Error("Program already exists in one of the languages");
     }
 
     const updatedProgram = await prisma.$transaction(async (tx) => {
@@ -141,6 +141,6 @@ export async function updateProgram(programId: string, data: UpdateProgramData) 
     return updatedProgram;
   } catch (error) {
     console.error("Error updating program:", error);
-    throw new Error("Erreur lors de la mise à jour du programme");
+    throw new Error("Error updating program");
   }
 }

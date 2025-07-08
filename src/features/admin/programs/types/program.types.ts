@@ -12,7 +12,7 @@ import {
   UserProgramEnrollment
 } from "@prisma/client";
 
-// Type pour getProgramById avec toutes les associations
+// Type for getProgramById with all associations
 export type ProgramWithFullDetails = Program & {
   coaches: ProgramCoach[];
   weeks: (ProgramWeek & {
@@ -30,7 +30,7 @@ export type ProgramWithFullDetails = Program & {
   })[];
 };
 
-// Type pour getPrograms avec les propriétés calculées
+// Type for getPrograms with computed properties
 export type ProgramWithStats = Program & {
   coaches: ProgramCoach[];
   weeks: (ProgramWeek & {
@@ -42,14 +42,14 @@ export type ProgramWithStats = Program & {
     })[];
   })[];
   enrollments: Pick<UserProgramEnrollment, "id">[];
-  // Propriétés calculées
+  // Computed properties
   totalEnrollments: number;
   totalWeeks: number;
   totalSessions: number;
   totalExercises: number;
 };
 
-// Type pour une semaine avec ses sessions
+// Type for a week with its sessions
 export type WeekWithSessions = ProgramWeek & {
   sessions: (ProgramSession & {
     exercises: (ProgramSessionExercise & {
@@ -59,7 +59,7 @@ export type WeekWithSessions = ProgramWeek & {
   })[];
 };
 
-// Type pour une session avec ses exercices
+// Type for a session with its exercises
 export type SessionWithExercises = ProgramSession & {
   exercises: (ProgramSessionExercise & {
     exercise: Exercise;
@@ -67,7 +67,7 @@ export type SessionWithExercises = ProgramSession & {
   })[];
 };
 
-// Type pour un exercice avec ses attributs complets (pour le modal)
+// Type for an exercise with its complete attributes (for the modal)
 export type ExerciseWithAttributes = Exercise & {
   attributes: (ExerciseAttribute & {
     attributeName: ExerciseAttributeName;

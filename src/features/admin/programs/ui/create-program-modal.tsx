@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle } from "lucide-react";
+import { useI18n } from "../../../../../locales/client";
 
 import { CreateProgramForm } from "./create-program-form";
 
@@ -10,21 +11,34 @@ interface CreateProgramModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const STEPS = [
-  { id: 1, title: "Informations générales", description: "Titre, description, niveau..." },
-  { id: 2, title: "Configuration", description: "Durée, fréquence, équipement..." },
-  { id: 3, title: "Coachs", description: "Ajouter les coachs du programme" },
-] as const;
-
 export function CreateProgramModal({ open, onOpenChange }: CreateProgramModalProps) {
+  const t = useI18n();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  const STEPS = [
+    {
+      id: 1,
+      title: t("admin.programs.create_program_modal.steps.general.title"),
+      description: t("admin.programs.create_program_modal.steps.general.description"),
+    },
+    {
+      id: 2,
+      title: t("admin.programs.create_program_modal.steps.configuration.title"),
+      description: t("admin.programs.create_program_modal.steps.configuration.description"),
+    },
+    {
+      id: 3,
+      title: t("admin.programs.create_program_modal.steps.coaches.title"),
+      description: t("admin.programs.create_program_modal.steps.coaches.description"),
+    },
+  ] as const;
 
   const handleStepComplete = (step: number) => {
     if (!completedSteps.includes(step)) {
       setCompletedSteps([...completedSteps, step]);
     }
-    
+
     // Move to next step if not last
     if (step < STEPS.length) {
       setCurrentStep(step + 1);
@@ -49,15 +63,12 @@ export function CreateProgramModal({ open, onOpenChange }: CreateProgramModalPro
         <div className="modal modal-open">
           <div className="modal-box w-11/12 max-w-4xl h-full max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Créer un nouveau programme</h3>
-              <button 
-                className="btn btn-sm btn-circle btn-ghost"
-                onClick={handleClose}
-              >
+              <h3 className="font-bold text-lg">{t("admin.programs.create_program_modal.title")}</h3>
+              <button className="btn btn-sm btn-circle btn-ghost" onClick={handleClose}>
                 ✕
               </button>
             </div>
-            
+
             {/* Steps indicator */}
             <div className="flex items-center justify-between mb-6 px-4">
               {STEPS.map((step, index) => (
@@ -83,7 +94,7 @@ export function CreateProgramModal({ open, onOpenChange }: CreateProgramModalPro
                       <div className="text-xs text-base-content/60">{step.description}</div>
                     </div>
                   </div>
-                  
+
                   {index < STEPS.length - 1 && (
                     <div
                       className={`w-20 h-0.5 mx-4 ${

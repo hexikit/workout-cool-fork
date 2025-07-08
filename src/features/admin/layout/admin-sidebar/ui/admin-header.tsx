@@ -9,6 +9,7 @@ import Logo from "@public/logo.png";
 import { PLACEHOLDERS } from "@/shared/constants/placeholders";
 import { paths } from "@/shared/constants/paths";
 import { useLogout } from "@/features/auth/model/useLogout";
+import { useI18n } from "../../../../../../locales/client";
 import { displayFirstNameAndFirstLetterLastName } from "@/entities/user/lib/display-name";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ user }: AdminHeaderProps) {
+  const t = useI18n();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const logout = useLogout(paths.root);
 
@@ -34,7 +36,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
 
           <Link className="flex items-center space-x-3" href="/admin">
             <Image alt="WorkoutCool Logo" className="h-8 w-8" height={32} src={Logo} width={32} />
-            <span className="hidden text-xl font-semibold text-gray-900 sm:block dark:text-white">Administration</span>
+            <span className="hidden text-xl font-semibold text-gray-900 sm:block dark:text-white">{t("admin.header.administration")}</span>
           </Link>
         </div>
 
@@ -61,13 +63,13 @@ export function AdminHeader({ user }: AdminHeaderProps) {
               <DropdownMenuItem asChild>
                 <Link className="flex items-center space-x-2" href={`/${paths.profile}`}>
                   <UserCog className="h-4 w-4" />
-                  <span>Profil</span>
+                  <span>{t("admin.header.profile")}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => logout.mutate()}>
                 <div className="flex items-center space-x-2">
                   <LogOut className="h-4 w-4" />
-                  <span>Déconnexion</span>
+                  <span>{t("admin.header.logout")}</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

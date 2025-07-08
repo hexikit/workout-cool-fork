@@ -58,6 +58,6 @@ export async function updateExerciseSets(exerciseId: string, sets: SetData[]) {
     return { success: true };
   } catch (error) {
     console.error("Error updating exercise sets:", error);
-    throw new Error("Erreur lors de la mise à jour des séries");
+    throw new Error("Error updating exercise sets");
   }
 }

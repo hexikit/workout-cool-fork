@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useI18n } from "../../../../../../locales/client";
 import Link from "next/link";
 import { Users, LayoutDashboard, BarChart3, Settings } from "lucide-react";
 
@@ -8,42 +9,46 @@ import { cn } from "@/shared/lib/utils";
 
 import version from "../../../../../../package.json";
 
-const navigation = [
-  {
-    name: "Dashboard",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-    description: "Overview of the statistics.",
-  },
-  {
-    name: "Users",
-    href: "/admin/users",
-    icon: Users,
-    description: "Manage users.",
-  },
-  {
-    name: "Programs",
-    href: "/admin/programs",
-    icon: BarChart3,
-    description: "Manage programs.",
-  },
-  {
-    name: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-    description: "Configuration of the system.",
-  },
-];
+
+
 
 export const AdminSidebar = () => {
+  const t = useI18n();
   const pathname = usePathname();
+
+  const navigation = [
+    {
+      name: t("admin.sidebar.dashboard"),
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+      description: t("admin.sidebar.dashboard_description"),
+    },
+    {
+      name: t("admin.sidebar.users"),
+      href: "/admin/users",
+      icon: Users,
+      description: t("admin.sidebar.users_description"),
+    },
+    {
+      name: t("admin.sidebar.programs"),
+      href: "/admin/programs",
+      icon: BarChart3,
+      description: t("admin.sidebar.programs_description"),
+    },
+    {
+      name: t("admin.sidebar.settings"),
+      href: "/admin/settings",
+      icon: Settings,
+      description: t("admin.sidebar.settings_description"),
+    },
+  ];
 
   return (
     <aside className="hidden w-64 flex-col border-r border-gray-200 bg-white md:flex dark:border-gray-700 dark:bg-gray-800">
       <div className="flex flex-1 flex-col pt-6">
         <nav className="flex-1 space-y-2 px-4">
           <div className="mb-6">
-            <h2 className="px-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Navigation</h2>
+            <h2 className="px-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{t("admin.sidebar.navigation")}</h2>
           </div>
 
           {navigation.map((item) => {
@@ -81,8 +86,8 @@ export const AdminSidebar = () => {
         {/* Footer */}
         <div className="border-t border-gray-200 p-4 dark:border-gray-700">
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            <p>WorkoutCool Admin</p>
-            <p className="mt-1">Version {version.version}</p>
+            <p>{t("admin.sidebar.admin_footer")}</p>
+            <p className="mt-1">{t("admin.sidebar.version")} {version.version}</p>
           </div>
         </div>
       </div>

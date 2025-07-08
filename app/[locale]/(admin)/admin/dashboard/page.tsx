@@ -4,6 +4,7 @@ import { Users, Target } from "lucide-react";
 
 import { prisma } from "@/shared/lib/prisma";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getI18n } from "../../../../../locales/server";
 
 async function getDashboardStats() {
   const [totalUsers, totalWorkoutSessions, totalExercises, activeSubscriptions, recentUsers, recentWorkouts, totalPrograms] =
@@ -59,6 +60,7 @@ async function getDashboardStats() {
 
 async function DashboardStats() {
   const stats = await getDashboardStats();
+  const t = await getI18n();
 
   return (
     <div className="grid gap-4 md:gap-6">
@@ -71,12 +73,15 @@ async function DashboardStats() {
                   <div className="rounded-xl bg-blue-500 p-2">
                     <Users className="h-5 w-5 text-white" />
                   </div>
-                  <span className="text-xs font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">Communauté</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                    {t("admin.dashboard.community")}
+                  </span>
                 </div>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalUsers.toLocaleString()}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <p className="text-xs text-gray-600 dark:text-gray-300">Utilisateurs</p>
-                  <span className="font-semibold text-green-600 dark:text-green-400">+{stats.recentUsers}</span> cette semaine
+                  <p className="text-xs text-gray-600 dark:text-gray-300">{t("admin.dashboard.users")}</p>
+                  <span className="font-semibold text-green-600 dark:text-green-400">+{stats.recentUsers}</span>{" "}
+                  {t("admin.dashboard.this_week")}
                 </p>
               </div>
               <div className="transition-transform duration-200 group-hover:rotate-6">
@@ -101,8 +106,8 @@ async function DashboardStats() {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalWorkoutSessions.toLocaleString()}</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">Sessions</p>
-            <p className="text-xs text-green-600 dark:text-green-400">+{stats.recentWorkouts} cette semaine</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">{t("admin.dashboard.sessions")}</p>
+            <p className="text-xs text-green-600 dark:text-green-400">+{stats.recentWorkouts} {t("admin.dashboard.this_week")}</p>
           </div>
         </div>
       </div>
@@ -124,7 +129,7 @@ async function DashboardStats() {
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalPrograms.toLocaleString()}</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">Programmes</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">{t("admin.dashboard.programs")}</p>
           </div>
         </div>
 
@@ -142,7 +147,7 @@ async function DashboardStats() {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalExercises.toLocaleString()}</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">Exercices</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">{t("admin.dashboard.exercises")}</p>
           </div>
         </div>
 
@@ -161,7 +166,7 @@ async function DashboardStats() {
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">{stats.activeSubscriptions}</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">Abonnés</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">{t("admin.dashboard.subscribers")}</p>
           </div>
         </div>
       </div>
@@ -204,7 +209,9 @@ function DashboardStatsLoading() {
   );
 }
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  const t = await getI18n();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
@@ -212,8 +219,8 @@ export default function AdminDashboard() {
           <Target className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Dashboard Admin</h1>
-          <p className="text-gray-600 dark:text-gray-300">WorkoutCool Admin</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{t("admin.dashboard.admin_dashboard")}</h1>
+          <p className="text-gray-600 dark:text-gray-300">{t("admin.dashboard.workoutcool_admin")}</p>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect } from "react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Eye, ArrowDown, ArrowUp, AlertTriangle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useI18n } from "../../../../../../locales/client";
 
 import { authClient } from "@/features/auth/lib/auth-client";
 import { getUsersAction } from "@/entities/user/model/get-users.actions";
@@ -32,6 +33,7 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ initialUsers }: UsersTableProps) {
+  const t = useI18n();
   const [page, setPage] = useQueryState("page", { defaultValue: "1" });
   const [searchQuery, setSearchQuery] = useQueryState("search", parseAsStringLiteral<string>([]).withDefault(""));
   const [sortBy, setSortBy] = useQueryState("sortBy", parseAsStringLiteral<SortableColumn>(sortableColumns).withDefault("createdAt"));
@@ -114,11 +116,11 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
         window.location.reload();
       } else {
         console.error("Erreur d'impersonnalisation:", impersonatedSession?.error);
-        alert(`Erreur d'impersonnalisation: ${impersonatedSession?.error?.message || "Une erreur est survenue."}`);
+        alert(`${t("admin.users_table.impersonation_error")}: ${impersonatedSession?.error?.message || t("admin.users_table.impersonation_error_message")}`);
       }
     } catch (error) {
       console.error("Exception lors de l'impersonnalisation:", error);
-      alert("Une exception est survenue lors de l'impersonnalisation.");
+      alert(t("admin.users_table.impersonation_exception"));
     } finally {
       setImpersonatingUserId(null);
     }
@@ -129,7 +131,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Tous les utilisateurs</h2>
+          <h2 className="text-xl font-semibold">{t("admin.users_table.all_users")}</h2>
           <Skeleton className="w-sm h-10 max-w-sm" />
         </div>
         <div className="rounded-md border p-4">
@@ -146,10 +148,10 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
       <div className="border-destructive bg-destructive/10 space-y-4 rounded-md border p-4">
         <div className="text-destructive flex items-center">
           <AlertTriangle className="mr-2 h-5 w-5" />
-          <h3 className="text-lg font-semibold">Erreur de chargement des utilisateurs</h3>
+          <h3 className="text-lg font-semibold">{t("admin.users_table.loading_error")}</h3>
         </div>
         <p className="text-destructive/80 text-sm">
-          Impossible de récupérer la liste des utilisateurs. Veuillez réessayer plus tard. ({error?.message || "Erreur inconnue"})
+          {t("admin.users_table.loading_error_message")} ({error?.message || t("admin.users_table.unknown_error")})
         </p>
       </div>
     );
@@ -160,7 +162,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
   if (!data || !data.data) {
     // This case should ideally be handled by the error state or empty data state below
     // but kept as a fallback.
-    return <p>Aucune donnée disponible ou erreur de chargement.</p>;
+    return <p>{t("admin.users_table.no_data")}</p>
   }
 
   const totalPages = data.data.pagination.pages || 1;
@@ -170,27 +172,27 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Tous les utilisateurs</h2>
-        <Input className="max-w-sm" onChange={handleSearchInputChange} placeholder="Rechercher par ID ou email..." value={inputValue} />
+        <h2 className="text-xl font-semibold">{t("admin.users_table.all_users")}</h2>
+        <Input className="max-w-sm" onChange={handleSearchInputChange} placeholder={t("admin.users_table.search_placeholder")} value={inputValue} />
       </div>
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Nom</TableHead>
+              <TableHead>{t("admin.users_table.id")}</TableHead>
+              <TableHead>{t("admin.users_table.name")}</TableHead>
               <TableHead className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSort("email")}>
-                Email
+                {t("admin.users_table.email")}
                 {renderSortIndicator("email")}
               </TableHead>
-              <TableHead>Rôle</TableHead>
-              <TableHead>Vérifié</TableHead>
+              <TableHead>{t("admin.users_table.role")}</TableHead>
+              <TableHead>{t("admin.users_table.verified")}</TableHead>
               <TableHead className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSort("createdAt")}>
-                Créé le
+                {t("admin.users_table.created_at")}
                 {renderSortIndicator("createdAt")}
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">{t("admin.users_table.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -207,7 +209,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                 <TableCell className="text-destructive py-4 text-center" colSpan={7}>
                   <div className="flex items-center justify-center">
                     <AlertTriangle className="mr-2 h-5 w-5" />
-                    <span>Erreur lors du chargement des données.</span>
+                    <span>{t("admin.users_table.error_loading_data")}</span>
                   </div>
                   <p className="text-muted-foreground text-xs">{error?.message}</p>
                 </TableCell>
@@ -215,7 +217,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
             ) : !tableIsEffectivelyLoading && usersToDisplay.length === 0 ? (
               <TableRow>
                 <TableCell className="py-4 text-center" colSpan={7}>
-                  Aucun utilisateur trouvé.
+                  {t("admin.users_table.no_users_found")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -244,11 +246,11 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                       disabled={impersonatingUserId === user.id}
                       onClick={() => handleImpersonate(user.id)}
                       size="small"
-                      title={`Impersonnaliser ${user.firstName || ""} ${user.lastName || ""}`}
+                      title={`${t("admin.users_table.impersonate")} ${user.firstName || ""} ${user.lastName || ""}`}
                       variant="outline"
                     >
                       <Eye className="mr-2 h-4 w-4" />
-                      {impersonatingUserId === user.id ? "Chargement..." : "Impersonnaliser"}
+                      {impersonatingUserId === user.id ? t("admin.users_table.impersonating") : t("admin.users_table.impersonate")}
                     </Button>
                   </TableCell>
                 </TableRow>
